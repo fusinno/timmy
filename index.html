@@ -2,134 +2,133 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <title>Timmy</title>
   <style>
     :root {
       color-scheme: dark;
-      --ink: #221c1b;
-      --paper: #fff7df;
-      --sun: #ffd166;
-      --mint: #6ee7b7;
-      --tomato: #ef4444;
-      --blue: #4f9cff;
-      --violet: #7c3aed;
-      --floor: #111827;
+      --ink: #211817;
+      --paper: #fff7de;
+      --sun: #ffd45a;
+      --red: #ef4444;
+      --green: #55d98b;
+      --cyan: #5ed6ff;
+      --panel: rgba(255, 247, 222, .94);
+      --shadow: rgba(0, 0, 0, .35);
     }
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      background: #101820;
+      color: var(--paper);
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      overscroll-behavior: none;
     }
 
     body {
-      margin: 0;
-      min-height: 100vh;
+      min-height: 100dvh;
       display: grid;
       place-items: center;
-      overflow: hidden;
       background:
-        radial-gradient(circle at 20% 18%, rgba(255, 209, 102, .34), transparent 22rem),
-        radial-gradient(circle at 80% 12%, rgba(110, 231, 183, .22), transparent 20rem),
-        linear-gradient(135deg, #1f2937 0%, #111827 46%, #1c1917 100%);
-      font-family: "Trebuchet MS", "Verdana", sans-serif;
-      color: var(--paper);
+        radial-gradient(circle at 12% 10%, rgba(255, 212, 90, .38), transparent 12rem),
+        radial-gradient(circle at 88% 8%, rgba(94, 214, 255, .22), transparent 13rem),
+        linear-gradient(160deg, #111827 0%, #172033 48%, #241613 100%);
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .12;
-      background-image:
-        linear-gradient(90deg, #fff 1px, transparent 1px),
-        linear-gradient(#fff 1px, transparent 1px);
-      background-size: 42px 42px;
-      transform: rotate(-2deg) scale(1.1);
-    }
-
-    .game-shell {
-      position: relative;
-      width: min(94vw, 720px);
+    .app {
+      width: min(100vw, 560px);
+      height: 100dvh;
       display: grid;
-      gap: 14px;
-      padding: 18px;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
     }
 
     header {
       display: flex;
-      align-items: end;
+      align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 10px;
+      min-height: 58px;
     }
 
     h1 {
       margin: 0;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: clamp(42px, 9vw, 86px);
-      line-height: .82;
-      letter-spacing: 0;
+      font-size: clamp(42px, 14vw, 76px);
+      line-height: .8;
       color: var(--sun);
-      text-shadow:
-        4px 4px 0 var(--ink),
-        -2px 2px 0 var(--ink),
-        0 7px 20px rgba(0, 0, 0, .35);
+      letter-spacing: 0;
+      text-shadow: 3px 3px 0 var(--ink), 0 10px 24px var(--shadow);
     }
 
     .hud {
       display: flex;
-      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
       justify-content: flex-end;
-      gap: 8px;
-      min-width: 180px;
     }
 
     .chip,
     button {
       border: 3px solid var(--ink);
-      box-shadow: 4px 4px 0 var(--ink);
       background: var(--paper);
       color: var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
       font-weight: 900;
       text-transform: uppercase;
     }
 
     .chip {
-      min-width: 86px;
-      padding: 8px 10px;
+      min-width: 70px;
+      padding: 7px 8px 6px;
       text-align: center;
-      font-size: 14px;
+      font-size: 11px;
+      line-height: 1;
       transform: rotate(-1deg);
     }
 
     .chip strong {
       display: block;
-      font-size: 26px;
-      line-height: 1;
+      margin-top: 3px;
+      font-size: 24px;
+      line-height: .9;
+    }
+
+    .stage-wrap {
+      min-height: 0;
+      display: grid;
+      place-items: center;
     }
 
     .stage {
       position: relative;
+      width: min(96vw, 100%, calc(100dvh - 190px));
+      max-width: 540px;
       aspect-ratio: 1 / 1;
       border: 5px solid var(--ink);
-      box-shadow:
-        9px 9px 0 var(--ink),
-        0 24px 70px rgba(0, 0, 0, .42);
-      background: #d5f1df;
+      background: #b9eccb;
+      box-shadow: 7px 7px 0 var(--ink), 0 22px 60px var(--shadow);
       overflow: hidden;
       touch-action: none;
+      user-select: none;
     }
 
     canvas {
+      display: block;
       width: 100%;
       height: 100%;
-      display: block;
-      image-rendering: auto;
-      background:
-        linear-gradient(90deg, rgba(34, 28, 27, .09) 1px, transparent 1px),
-        linear-gradient(rgba(34, 28, 27, .09) 1px, transparent 1px),
-        #b9eccb;
-      background-size: 32px 32px;
+      background: #b9eccb;
     }
 
     .toast {
@@ -138,20 +137,17 @@
       display: grid;
       place-items: center;
       pointer-events: none;
-      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: clamp(58px, 15vw, 132px);
-      letter-spacing: 0;
-      color: var(--tomato);
-      text-shadow:
-        5px 5px 0 var(--paper),
-        9px 9px 0 var(--ink),
-        0 18px 30px rgba(0, 0, 0, .26);
       opacity: 0;
-      transform: scale(.55) rotate(-8deg);
+      transform: scale(.65) rotate(-8deg);
+      color: var(--red);
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: clamp(58px, 21vw, 122px);
+      letter-spacing: 0;
+      text-shadow: 4px 4px 0 var(--paper), 8px 8px 0 var(--ink), 0 16px 30px var(--shadow);
     }
 
     .toast.show {
-      animation: pop .72s cubic-bezier(.18, .89, .32, 1.28);
+      animation: tukutu .72s cubic-bezier(.18, .89, .32, 1.28);
     }
 
     .overlay {
@@ -159,130 +155,125 @@
       inset: 0;
       display: grid;
       place-items: center;
-      padding: 26px;
-      background: rgba(17, 24, 39, .66);
+      padding: 18px;
+      background: rgba(13, 18, 28, .68);
       text-align: center;
     }
 
     .panel {
-      max-width: 430px;
-      padding: 24px;
+      width: min(92%, 390px);
+      padding: 22px;
       border: 4px solid var(--ink);
-      background: var(--paper);
+      background: var(--panel);
       color: var(--ink);
-      box-shadow: 8px 8px 0 var(--ink);
+      box-shadow: 7px 7px 0 var(--ink);
       transform: rotate(-1deg);
     }
 
     .panel h2 {
       margin: 0 0 8px;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: 42px;
+      font-size: clamp(34px, 12vw, 52px);
+      line-height: .95;
       letter-spacing: 0;
     }
 
     .panel p {
       margin: 0 0 16px;
-      font-weight: 800;
-      line-height: 1.35;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.32;
     }
 
     button {
-      min-height: 44px;
-      padding: 10px 16px;
+      min-height: 46px;
+      border-radius: 0;
+      padding: 10px 14px;
       cursor: pointer;
       font: inherit;
       font-size: 14px;
-      transition: transform .12s ease, box-shadow .12s ease;
     }
 
-    button:hover,
-    button:focus-visible {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0 var(--ink);
-      outline: none;
+    button:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 var(--ink);
     }
 
-    .controls {
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .mobile-pad {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 10px;
     }
 
-    .controls button {
-      padding: 8px;
-      font-size: 20px;
+    .hint {
+      align-self: center;
+      min-width: 0;
+      color: rgba(255, 247, 222, .84);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .dpad {
+      width: 154px;
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(3, 48px);
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .dpad button {
+      min-height: 48px;
+      padding: 0;
+      font-size: 24px;
       line-height: 1;
     }
 
-    .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      color: rgba(255, 247, 223, .82);
-      font-weight: 800;
-      font-size: 13px;
+    .dpad button[data-dir="up"] { grid-column: 2; grid-row: 1; }
+    .dpad button[data-dir="left"] { grid-column: 1; grid-row: 2; }
+    .dpad button[data-dir="right"] { grid-column: 3; grid-row: 2; }
+    .dpad button[data-dir="down"] { grid-column: 2; grid-row: 3; }
+
+    .status-strip {
+      justify-self: end;
+      align-self: center;
+      display: grid;
+      gap: 5px;
+      text-align: right;
+      color: rgba(255, 247, 222, .8);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.15;
     }
 
-    .hidden {
-      display: none;
+    @keyframes tukutu {
+      0% { opacity: 0; transform: scale(.48) rotate(-12deg); }
+      18% { opacity: 1; transform: scale(1.15) rotate(3deg); }
+      62% { opacity: 1; transform: scale(1) rotate(-2deg); }
+      100% { opacity: 0; transform: scale(1.45) rotate(8deg); }
     }
 
-    @keyframes pop {
-      0% {
-        opacity: 0;
-        transform: scale(.45) rotate(-12deg);
-      }
-      18% {
-        opacity: 1;
-        transform: scale(1.18) rotate(3deg);
-      }
-      62% {
-        opacity: 1;
-        transform: scale(1) rotate(-2deg);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(1.42) rotate(8deg);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .game-shell {
-        width: 100vw;
-        min-height: 100vh;
-        padding: 12px;
-        align-content: center;
-      }
-
-      header {
-        align-items: start;
-      }
-
-      .chip {
-        min-width: 72px;
-        padding: 7px 8px;
-        font-size: 12px;
-      }
-
-      .chip strong {
-        font-size: 22px;
+    @media (min-width: 720px) {
+      .app {
+        padding-top: 18px;
+        padding-bottom: 18px;
       }
 
       .stage {
-        box-shadow: 5px 5px 0 var(--ink);
-      }
-
-      .footer {
-        align-items: stretch;
-        flex-direction: column;
+        width: min(78vh, 560px);
       }
     }
   </style>
 </head>
 <body>
-  <main class="game-shell" aria-label="Juego Timmy">
+  <main class="app" aria-label="Juego Timmy para movil">
     <header>
       <h1>Timmy</h1>
       <div class="hud" aria-live="polite">
@@ -291,27 +282,33 @@
       </div>
     </header>
 
-    <section class="stage" id="stage">
-      <canvas id="game" width="640" height="640" aria-label="Tablero del juego Timmy"></canvas>
-      <div class="toast" id="toast">tukutu</div>
-      <div class="overlay" id="overlay">
-        <div class="panel">
-          <h2 id="overlayTitle">Listo</h2>
-          <p id="overlayText">Come cabezas calvas, crece y evita chocar contigo o con el borde.</p>
-          <button id="startButton" type="button">Empezar</button>
+    <div class="stage-wrap">
+      <section class="stage" id="stage">
+        <canvas id="game" width="640" height="640" aria-label="Tablero del juego Timmy"></canvas>
+        <div class="toast" id="toast">tukutu</div>
+        <div class="overlay" id="overlay">
+          <div class="panel">
+            <h2 id="overlayTitle">Cargando</h2>
+            <p id="overlayText">Preparando las imagenes del juego.</p>
+            <button id="startButton" type="button" disabled>Empezar</button>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <div class="footer">
-      <span>Flechas, WASD o deslizamiento en movil.</span>
-      <div class="controls" aria-label="Controles tactiles">
-        <button type="button" data-dir="left" aria-label="Izquierda">&larr;</button>
-        <button type="button" data-dir="up" aria-label="Arriba">&uarr;</button>
-        <button type="button" data-dir="down" aria-label="Abajo">&darr;</button>
-        <button type="button" data-dir="right" aria-label="Derecha">&rarr;</button>
-      </div>
+      </section>
     </div>
+
+    <nav class="mobile-pad" aria-label="Controles del juego">
+      <div class="hint">Desliza sobre el tablero o usa los botones.</div>
+      <div class="dpad" aria-label="Controles tactiles">
+        <button type="button" data-dir="up" aria-label="Arriba">&uarr;</button>
+        <button type="button" data-dir="left" aria-label="Izquierda">&larr;</button>
+        <button type="button" data-dir="right" aria-label="Derecha">&rarr;</button>
+        <button type="button" data-dir="down" aria-label="Abajo">&darr;</button>
+      </div>
+      <div class="status-strip">
+        <span>Timmy es la cabeza.</span>
+        <span>Las imagenes cambian al azar.</span>
+      </div>
+    </nav>
   </main>
 
   <script>
@@ -326,28 +323,60 @@
     const bestNode = document.getElementById("best");
     const toast = document.getElementById("toast");
 
-    const grid = 20;
-    const cell = canvas.width / grid;
-    const characterScale = 3;
-    const stepMs = 118;
-    const startSnake = [
-      { x: 8, y: 10 },
-      { x: 7, y: 10 },
-      { x: 6, y: 10 }
+    const assetList = [
+      { id: "timmy", label: "Timmy", src: "imagenes/timmy.png", role: "head" },
+      { id: "momia", label: "Momia", src: "imagenes/momia.png", role: "target" },
+      { id: "paco", label: "Paco", src: "imagenes/paco.png", role: "target" },
+      { id: "seriente", label: "Seriente", src: "imagenes/seriente.png", role: "target" }
     ];
 
-    let snake;
-    let food;
-    let direction;
-    let queuedDirection;
-    let score;
-    let best = Number(localStorage.getItem("timmy-best") || 0);
+    const assets = new Map();
+    const targetAssets = [];
+    const grid = 16;
+    const cell = canvas.width / grid;
+    const stepMs = 138;
+    const startSnake = [
+      { x: 5, y: 8 },
+      { x: 4, y: 8 },
+      { x: 3, y: 8 }
+    ];
+
+    let snake = [];
+    let food = null;
+    let direction = { x: 1, y: 0 };
+    let queuedDirection = { x: 1, y: 0 };
+    let score = 0;
+    let best = Number(localStorage.getItem("timmy-mobile-best") || 0);
     let running = false;
+    let assetsReady = false;
     let lastTick = 0;
     let rafId = null;
     let touchStart = null;
 
     bestNode.textContent = best;
+
+    function loadImage(asset) {
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve({ ...asset, image, loaded: true });
+        image.onerror = () => resolve({ ...asset, image: null, loaded: false });
+        image.src = asset.src;
+      });
+    }
+
+    async function boot() {
+      const loaded = await Promise.all(assetList.map(loadImage));
+      loaded.forEach((asset) => {
+        assets.set(asset.id, asset);
+        if (asset.role === "target") targetAssets.push(asset);
+      });
+      assetsReady = true;
+      reset();
+      overlayTitle.textContent = "Listo";
+      overlayText.textContent = "Come las imagenes, crece y no choques. Cada bocado dice tukutu.";
+      startButton.disabled = false;
+      startButton.textContent = "Jugar";
+    }
 
     function reset() {
       snake = startSnake.map((part) => ({ ...part }));
@@ -369,10 +398,13 @@
         }
       }
       if (freeCells.length === 0) return null;
-      return freeCells[Math.floor(Math.random() * freeCells.length)];
+      const cellPick = freeCells[Math.floor(Math.random() * freeCells.length)];
+      const asset = targetAssets[Math.floor(Math.random() * targetAssets.length)];
+      return { ...cellPick, asset };
     }
 
     function start() {
+      if (!assetsReady) return;
       reset();
       running = true;
       overlay.classList.add("hidden");
@@ -404,36 +436,31 @@
       const selfHit = collisionSnake.some((part) => part.x === nextHead.x && part.y === nextHead.y);
 
       if (wallHit || selfHit) {
-        gameOver();
+        endGame();
         return;
       }
 
       snake.unshift(nextHead);
-
       if (eatsFood) {
         score += 1;
         scoreNode.textContent = score;
         best = Math.max(best, score);
         bestNode.textContent = best;
-        localStorage.setItem("timmy-best", String(best));
+        localStorage.setItem("timmy-mobile-best", String(best));
         showTukutu();
         food = createFood();
-        if (!food) {
-          victory();
-        }
+        if (!food) victory();
       } else {
         snake.pop();
       }
     }
 
-    function gameOver() {
+    function endGame() {
       running = false;
       cancelAnimationFrame(rafId);
       overlayTitle.textContent = "Fin";
-      overlayText.textContent = score
-        ? `Has conseguido ${score} tukutu${score === 1 ? "" : "s"}.`
-        : "La primera cabeza se ha resistido.";
-      startButton.textContent = "Reintentar";
+      overlayText.textContent = score ? `Has conseguido ${score} tukutu${score === 1 ? "" : "s"}.` : "Timmy no ha llegado al primer bocado.";
+      startButton.textContent = "Otra vez";
       overlay.classList.remove("hidden");
     }
 
@@ -441,8 +468,8 @@
       running = false;
       cancelAnimationFrame(rafId);
       overlayTitle.textContent = "Completo";
-      overlayText.textContent = `Has llenado todo el tablero con ${score} tukutus.`;
-      startButton.textContent = "Otra vez";
+      overlayText.textContent = `Has llenado el tablero con ${score} tukutus.`;
+      startButton.textContent = "Repetir";
       overlay.classList.remove("hidden");
     }
 
@@ -460,295 +487,159 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBoard();
-      if (food) drawFood(food.x, food.y);
-
-      for (let i = snake.length - 1; i >= 1; i -= 1) {
-        drawBody(snake[i], i);
-      }
-
-      drawTimmyHead(snake[0], direction);
+      if (food) drawTarget(food);
+      for (let i = snake.length - 1; i >= 1; i -= 1) drawBodySegment(snake[i], i);
+      drawHead(snake[0]);
     }
 
     function drawBoard() {
-      ctx.fillStyle = "#b9eccb";
+      ctx.fillStyle = "#aeecc8";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = "rgba(34,28,27,.10)";
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= grid; i += 1) {
-        const pos = i * cell;
-        ctx.beginPath();
-        ctx.moveTo(pos, 0);
-        ctx.lineTo(pos, canvas.height);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, pos);
-        ctx.lineTo(canvas.width, pos);
-        ctx.stroke();
-      }
-
-      ctx.fillStyle = "rgba(255,255,255,.28)";
       for (let y = 0; y < grid; y += 1) {
         for (let x = 0; x < grid; x += 1) {
-          if ((x + y) % 2 === 0) {
-            ctx.fillRect(x * cell, y * cell, cell, cell);
-          }
+          ctx.fillStyle = (x + y) % 2 === 0 ? "rgba(255,255,255,.24)" : "rgba(34,24,23,.04)";
+          ctx.fillRect(x * cell, y * cell, cell, cell);
         }
       }
-    }
 
-    function drawBody(part, index) {
-      const px = part.x * cell;
-      const py = part.y * cell;
-      const wiggle = Math.sin(index * 1.7 + score) * 2.8;
-
-      ctx.save();
-      ctx.translate(px + cell / 2, py + cell / 2);
-      ctx.rotate(wiggle * Math.PI / 180);
-
-      const base = index % 2 ? "#2dd484" : "#22b8cf";
-      const stripe = index % 2 ? "#ffe15a" : "#f97316";
-      roundedRect(-cell * .47, -cell * .39, cell * .94, cell * .78, 10, base, "#221c1b", 3);
-
-      ctx.fillStyle = "rgba(255,255,255,.28)";
-      ctx.beginPath();
-      ctx.ellipse(-cell * .16, -cell * .13, cell * .22, cell * .1, -.4, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = stripe;
-      ctx.lineWidth = 4;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(-cell * .3, 0);
-      ctx.quadraticCurveTo(0, -cell * .16, cell * .3, 0);
-      ctx.stroke();
-
-      ctx.fillStyle = "#fff7df";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, cell * .1, cell * .13, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    function drawFood(x, y) {
-      const cx = x * cell + cell / 2;
-      const cy = y * cell + cell / 2;
-      const bob = Math.sin(performance.now() / 220) * .03;
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(Math.sin(performance.now() / 260) * .07);
-      ctx.scale(characterScale, characterScale);
-
-      ctx.fillStyle = "rgba(34,28,27,.24)";
-      ctx.beginPath();
-      ctx.ellipse(2, cell * .43, cell * .42, cell * .13, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.save();
-      ctx.scale(1 + bob, 1 - bob);
-
-      ctx.fillStyle = "#f1b889";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.1;
-      ctx.beginPath();
-      ctx.ellipse(-cell * .39, cell * .01, cell * .105, cell * .145, -.12, 0, Math.PI * 2);
-      ctx.ellipse(cell * .39, cell * .01, cell * .105, cell * .145, .12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#f8caa6";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.ellipse(0, -cell * .015, cell * .39, cell * .45, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(255,255,255,.62)";
-      ctx.beginPath();
-      ctx.ellipse(-cell * .11, -cell * .23, cell * .135, cell * .075, -.45, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = "#111111";
-      ctx.lineWidth = 2.3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(-cell * .27, -cell * .145);
-      ctx.quadraticCurveTo(-cell * .15, -cell * .2, -cell * .045, -cell * .145);
-      ctx.moveTo(cell * .045, -cell * .145);
-      ctx.quadraticCurveTo(cell * .15, -cell * .2, cell * .27, -cell * .145);
-      ctx.stroke();
-
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(-cell * .14, -cell * .035, cell * .13, 0, Math.PI * 2);
-      ctx.arc(cell * .14, -cell * .035, cell * .13, 0, Math.PI * 2);
-      ctx.moveTo(-cell * .01, -cell * .035);
-      ctx.lineTo(cell * .01, -cell * .035);
-      ctx.stroke();
-
-      ctx.fillStyle = "#221c1b";
-      ctx.beginPath();
-      ctx.arc(-cell * .14, -cell * .035, cell * .034, 0, Math.PI * 2);
-      ctx.arc(cell * .14, -cell * .035, cell * .034, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = "#915b3a";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(0, cell * .015);
-      ctx.quadraticCurveTo(cell * .045, cell * .085, -cell * .025, cell * .105);
-      ctx.stroke();
-
-      ctx.fillStyle = "#111111";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.ellipse(0, cell * .195, cell * .095, cell * .046, 0, 0, Math.PI * 2);
-      ctx.moveTo(-cell * .09, cell * .21);
-      ctx.bezierCurveTo(-cell * .075, cell * .36, cell * .075, cell * .36, cell * .09, cell * .21);
-      ctx.bezierCurveTo(cell * .035, cell * .285, -cell * .035, cell * .285, -cell * .09, cell * .21);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = "#fff7df";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, cell * .17, cell * .115, .13 * Math.PI, .87 * Math.PI);
-      ctx.stroke();
-
-      ctx.restore();
-      ctx.restore();
-    }
-
-    function drawTimmyHead(part, dir) {
-      const cx = part.x * cell + cell / 2;
-      const cy = part.y * cell + cell / 2;
-      const angle = Math.atan2(dir.y, dir.x);
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle);
-      ctx.scale(characterScale, characterScale);
-
-      ctx.fillStyle = "rgba(34,28,27,.28)";
-      ctx.beginPath();
-      ctx.ellipse(1, cell * .46, cell * .48, cell * .13, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.5;
-      ctx.fillStyle = "#222a35";
-      ctx.beginPath();
-      ctx.arc(-cell * .31, cell * .35, cell * .205, 0, Math.PI * 2);
-      ctx.arc(cell * .31, cell * .35, cell * .205, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = "#fff7df";
-      ctx.lineWidth = 1.7;
-      for (const wheelX of [-cell * .31, cell * .31]) {
+      ctx.strokeStyle = "rgba(34,24,23,.11)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= grid; i += 1) {
+        const p = i * cell;
         ctx.beginPath();
-        ctx.arc(wheelX, cell * .35, cell * .13, 0, Math.PI * 2);
-        ctx.moveTo(wheelX - cell * .13, cell * .35);
-        ctx.lineTo(wheelX + cell * .13, cell * .35);
-        ctx.moveTo(wheelX, cell * .22);
-        ctx.lineTo(wheelX, cell * .48);
+        ctx.moveTo(p, 0);
+        ctx.lineTo(p, canvas.height);
+        ctx.moveTo(0, p);
+        ctx.lineTo(canvas.width, p);
         ctx.stroke();
       }
+    }
 
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.4;
+    function drawBodySegment(part, index) {
+      const cx = part.x * cell + cell / 2;
+      const cy = part.y * cell + cell / 2;
+      const pulse = Math.sin(performance.now() / 180 + index) * 1.5;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.sin(index * 1.1 + score) * .08);
+      ctx.fillStyle = index % 2 ? "#33d17a" : "#2fb7d8";
+      ctx.strokeStyle = "#221817";
+      ctx.lineWidth = 4;
+      roundRect(-cell * .42, -cell * .34, cell * .84, cell * .68, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = index % 2 ? "#ffd45a" : "#fff7de";
+      ctx.lineWidth = 5;
       ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(-cell * .3, cell * .35);
-      ctx.lineTo(-cell * .16, cell * .12);
-      ctx.lineTo(cell * .21, cell * .12);
-      ctx.lineTo(cell * .31, cell * .35);
-      ctx.moveTo(-cell * .32, cell * .35);
-      ctx.lineTo(cell * .32, cell * .35);
+      ctx.moveTo(-cell * .26, pulse);
+      ctx.quadraticCurveTo(0, -cell * .14, cell * .26, pulse);
       ctx.stroke();
-
-      roundedRect(-cell * .35, cell * .05, cell * .7, cell * .36, 9, "#3b82f6", "#221c1b", 2.4);
-
-      ctx.fillStyle = "#fbbf24";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(-cell * .07, cell * .06);
-      ctx.lineTo(cell * .08, cell * .06);
-      ctx.lineTo(0, cell * .23);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.3;
-      ctx.beginPath();
-      ctx.moveTo(-cell * .25, cell * .21);
-      ctx.quadraticCurveTo(-cell * .38, cell * .2, -cell * .45, cell * .32);
-      ctx.moveTo(cell * .24, cell * .21);
-      ctx.quadraticCurveTo(cell * .39, cell * .2, cell * .45, cell * .32);
-      ctx.stroke();
-
-      ctx.fillStyle = "#f4bf91";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.ellipse(0, -cell * .12, cell * .38, cell * .4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#754321";
-      ctx.beginPath();
-      ctx.moveTo(-cell * .34, -cell * .24);
-      ctx.bezierCurveTo(-cell * .24, -cell * .53, cell * .22, -cell * .55, cell * .34, -cell * .25);
-      ctx.bezierCurveTo(cell * .17, -cell * .34, -cell * .13, -cell * .31, -cell * .34, -cell * .24);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-
-      ctx.fillStyle = "#fff7df";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.arc(-cell * .14, -cell * .12, cell * .092, 0, Math.PI * 2);
-      ctx.arc(cell * .14, -cell * .12, cell * .092, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#221c1b";
-      ctx.beginPath();
-      ctx.arc(-cell * .105, -cell * .112, cell * .03, 0, Math.PI * 2);
-      ctx.arc(cell * .175, -cell * .112, cell * .03, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#ef4444";
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.ellipse(cell * .34, cell * .03, cell * .09, cell * .105, -.25, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = "#221c1b";
-      ctx.lineWidth = 1.9;
-      ctx.beginPath();
-      ctx.arc(0, cell * .08, cell * .15, .1 * Math.PI, .9 * Math.PI);
-      ctx.stroke();
-
       ctx.restore();
     }
-    function roundedRect(x, y, width, height, radius, fill, stroke, lineWidth) {
+
+    function drawTarget(target) {
+      const cx = target.x * cell + cell / 2;
+      const cy = target.y * cell + cell / 2;
+      const size = cell * 2.35;
+      const lift = Math.sin(performance.now() / 240) * 4;
+
+      ctx.save();
+      ctx.translate(cx, cy + lift);
+      ctx.fillStyle = "rgba(34,24,23,.25)";
+      ctx.beginPath();
+      ctx.ellipse(3, size * .34, size * .34, size * .08, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fff7de";
+      ctx.strokeStyle = "#221817";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .45, 0, Math.PI * 2);
+      ctx.clip();
+      drawImageContain(target.asset, 0, 0, size * .92, size * .92);
+      ctx.restore();
+
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .51, -.2, Math.PI * .72);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawHead(part) {
+      const cx = part.x * cell + cell / 2;
+      const cy = part.y * cell + cell / 2;
+      const size = cell * 2.95;
+      const timmy = assets.get("timmy");
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.fillStyle = "rgba(34,24,23,.25)";
+      ctx.beginPath();
+      ctx.ellipse(4, size * .36, size * .32, size * .08, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffd45a";
+      ctx.strokeStyle = "#221817";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .47, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .42, 0, Math.PI * 2);
+      ctx.clip();
+      drawImageContain(timmy, 0, 0, size * .9, size * .9);
+      ctx.restore();
+
+      drawDirectionMark(direction, size);
+      ctx.restore();
+    }
+
+    function drawDirectionMark(dir, size) {
+      const angle = Math.atan2(dir.y, dir.x);
+      ctx.save();
+      ctx.rotate(angle);
+      ctx.fillStyle = "#ef4444";
+      ctx.strokeStyle = "#221817";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(size * .52, 0);
+      ctx.lineTo(size * .37, -size * .08);
+      ctx.lineTo(size * .37, size * .08);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawImageContain(asset, cx, cy, boxW, boxH) {
+      if (!asset || !asset.loaded || !asset.image) {
+        ctx.fillStyle = "#5ed6ff";
+        ctx.fillRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+        return;
+      }
+      const image = asset.image;
+      const scale = Math.min(boxW / image.width, boxH / image.height);
+      const width = image.width * scale;
+      const height = image.height * scale;
+      ctx.drawImage(image, cx - width / 2, cy - height / 2, width, height);
+    }
+
+    function roundRect(x, y, width, height, radius) {
       ctx.beginPath();
       ctx.moveTo(x + radius, y);
       ctx.lineTo(x + width - radius, y);
@@ -760,22 +651,24 @@
       ctx.lineTo(x, y + radius);
       ctx.quadraticCurveTo(x, y, x + radius, y);
       ctx.closePath();
-      ctx.fillStyle = fill;
-      ctx.fill();
-      ctx.lineWidth = lineWidth;
-      ctx.strokeStyle = stroke;
-      ctx.stroke();
     }
 
+    const directions = {
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 }
+    };
+
     const keyMap = {
-      ArrowUp: { x: 0, y: -1 },
-      KeyW: { x: 0, y: -1 },
-      ArrowDown: { x: 0, y: 1 },
-      KeyS: { x: 0, y: 1 },
-      ArrowLeft: { x: -1, y: 0 },
-      KeyA: { x: -1, y: 0 },
-      ArrowRight: { x: 1, y: 0 },
-      KeyD: { x: 1, y: 0 }
+      ArrowUp: directions.up,
+      KeyW: directions.up,
+      ArrowDown: directions.down,
+      KeyS: directions.down,
+      ArrowLeft: directions.left,
+      KeyA: directions.left,
+      ArrowRight: directions.right,
+      KeyD: directions.right
     };
 
     document.addEventListener("keydown", (event) => {
@@ -783,7 +676,6 @@
         if (!running) start();
         return;
       }
-
       const next = keyMap[event.code];
       if (next) {
         event.preventDefault();
@@ -792,19 +684,17 @@
     });
 
     document.querySelectorAll("[data-dir]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const dir = button.dataset.dir;
-        const next = {
-          up: { x: 0, y: -1 },
-          down: { x: 0, y: 1 },
-          left: { x: -1, y: 0 },
-          right: { x: 1, y: 0 }
-        }[dir];
-        setDirection(next);
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        setDirection(directions[button.dataset.dir]);
       });
     });
 
     stage.addEventListener("pointerdown", (event) => {
+      if (!running && assetsReady) {
+        start();
+        return;
+      }
       touchStart = { x: event.clientX, y: event.clientY };
     });
 
@@ -813,23 +703,16 @@
       const dx = event.clientX - touchStart.x;
       const dy = event.clientY - touchStart.y;
       touchStart = null;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
-
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
       if (Math.abs(dx) > Math.abs(dy)) {
-        setDirection(dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 });
+        setDirection(dx > 0 ? directions.right : directions.left);
       } else {
-        setDirection(dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 });
+        setDirection(dy > 0 ? directions.down : directions.up);
       }
     });
 
     startButton.addEventListener("click", start);
-    reset();
+    boot();
   </script>
 </body>
 </html>
-
-
-
-
-
-
