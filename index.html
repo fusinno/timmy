@@ -324,27 +324,27 @@
     const toast = document.getElementById("toast");
 
     const assetList = [
-      { id: "timmy", label: "Timmy", src: "imagenes/timmy.png", role: "head" },
-      { id: "momia", label: "Momia", src: "imagenes/momia.png", role: "target" },
-      { id: "paco", label: "Paco", src: "imagenes/paco.png", role: "target" },
-      { id: "seriente", label: "Seriente", src: "imagenes/seriente.png", role: "target" }
+      { id: "timmy", label: "Timmy", src: "imagenes/timmy.png", role: "head", focusY: .24 },
+      { id: "momia", label: "Momia", src: "imagenes/momia.png", role: "target", focusY: .24 },
+      { id: "paco", label: "Paco", src: "imagenes/paco.png", role: "target", focusY: .24 },
+      { id: "seriente", label: "Seriente", src: "imagenes/seriente.png", role: "target", focusY: .5 }
     ];
 
     const assets = new Map();
     const targetAssets = [];
-    const grid = 16;
+    const grid = 15;
     const cell = canvas.width / grid;
-    const stepMs = 138;
+    const stepMs = 240;
     const startSnake = [
-      { x: 5, y: 8 },
-      { x: 4, y: 8 },
-      { x: 3, y: 8 }
+      { x: 7, y: 7 },
+      { x: 6, y: 7 },
+      { x: 5, y: 7 }
     ];
 
     let snake = [];
     let food = null;
-    let direction = { x: 1, y: 0 };
-    let queuedDirection = { x: 1, y: 0 };
+    let direction = { x: 0, y: 0 };
+    let queuedDirection = { x: 0, y: 0 };
     let score = 0;
     let best = Number(localStorage.getItem("timmy-mobile-best") || 0);
     let running = false;
@@ -373,15 +373,15 @@
       assetsReady = true;
       reset();
       overlayTitle.textContent = "Listo";
-      overlayText.textContent = "Come las imagenes, crece y no choques. Cada bocado dice tukutu.";
+      overlayText.textContent = "Pulsa Jugar y elige direccion. Timmy no se mueve hasta que deslices o pulses un boton.";
       startButton.disabled = false;
       startButton.textContent = "Jugar";
     }
 
     function reset() {
       snake = startSnake.map((part) => ({ ...part }));
-      direction = { x: 1, y: 0 };
-      queuedDirection = { x: 1, y: 0 };
+      direction = { x: 0, y: 0 };
+      queuedDirection = { x: 0, y: 0 };
       score = 0;
       food = createFood();
       scoreNode.textContent = score;
@@ -408,7 +408,7 @@
       reset();
       running = true;
       overlay.classList.add("hidden");
-      lastTick = performance.now();
+      lastTick = performance.now() + 260;
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(loop);
     }
@@ -424,9 +424,11 @@
     }
 
     function tick() {
-      if (queuedDirection.x !== -direction.x || queuedDirection.y !== -direction.y) {
+      const isWaiting = direction.x === 0 && direction.y === 0;
+      if (isWaiting || queuedDirection.x !== -direction.x || queuedDirection.y !== -direction.y) {
         direction = queuedDirection;
       }
+      if (direction.x === 0 && direction.y === 0) return;
 
       const head = snake[0];
       const nextHead = { x: head.x + direction.x, y: head.y + direction.y };
@@ -480,7 +482,14 @@
     }
 
     function setDirection(next) {
-      if (!running) return;
+      if (!next) return;
+      if (!running && assetsReady) {
+        start();
+      }
+      const head = snake[0];
+      const neck = snake[1];
+      if (neck && head.x + next.x === neck.x && head.y + next.y === neck.y) return;
+      if ((direction.x !== 0 || direction.y !== 0) && next.x === -direction.x && next.y === -direction.y) return;
       queuedDirection = next;
     }
 
@@ -544,7 +553,7 @@
     function drawTarget(target) {
       const cx = target.x * cell + cell / 2;
       const cy = target.y * cell + cell / 2;
-      const size = cell * 2.35;
+      const size = cell * 1.7;
       const lift = Math.sin(performance.now() / 240) * 4;
 
       ctx.save();
@@ -564,9 +573,9 @@
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(0, 0, size * .45, 0, Math.PI * 2);
+      ctx.arc(0, 0, size * .43, 0, Math.PI * 2);
       ctx.clip();
-      drawImageContain(target.asset, 0, 0, size * .92, size * .92);
+      drawImageCover(target.asset, 0, 0, size * .88, size * .88);
       ctx.restore();
 
       ctx.strokeStyle = "#ef4444";
@@ -580,7 +589,7 @@
     function drawHead(part) {
       const cx = part.x * cell + cell / 2;
       const cy = part.y * cell + cell / 2;
-      const size = cell * 2.95;
+      const size = cell * 1.95;
       const timmy = assets.get("timmy");
 
       ctx.save();
@@ -602,7 +611,7 @@
       ctx.beginPath();
       ctx.arc(0, 0, size * .42, 0, Math.PI * 2);
       ctx.clip();
-      drawImageContain(timmy, 0, 0, size * .9, size * .9);
+      drawImageCover(timmy, 0, 0, size * .9, size * .9);
       ctx.restore();
 
       drawDirectionMark(direction, size);
@@ -626,17 +635,31 @@
       ctx.restore();
     }
 
-    function drawImageContain(asset, cx, cy, boxW, boxH) {
+    function drawImageCover(asset, cx, cy, boxW, boxH) {
       if (!asset || !asset.loaded || !asset.image) {
         ctx.fillStyle = "#5ed6ff";
         ctx.fillRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
         return;
       }
+
       const image = asset.image;
-      const scale = Math.min(boxW / image.width, boxH / image.height);
-      const width = image.width * scale;
-      const height = image.height * scale;
-      ctx.drawImage(image, cx - width / 2, cy - height / 2, width, height);
+      const sourceRatio = image.width / image.height;
+      const targetRatio = boxW / boxH;
+      let sx = 0;
+      let sy = 0;
+      let sw = image.width;
+      let sh = image.height;
+
+      if (sourceRatio > targetRatio) {
+        sw = image.height * targetRatio;
+        sx = (image.width - sw) / 2;
+      } else {
+        sh = image.width / targetRatio;
+        const focusY = asset.focusY ?? .5;
+        sy = Math.max(0, Math.min(image.height - sh, image.height * focusY - sh / 2));
+      }
+
+      ctx.drawImage(image, sx, sy, sw, sh, cx - boxW / 2, cy - boxH / 2, boxW, boxH);
     }
 
     function roundRect(x, y, width, height, radius) {
@@ -691,10 +714,6 @@
     });
 
     stage.addEventListener("pointerdown", (event) => {
-      if (!running && assetsReady) {
-        start();
-        return;
-      }
       touchStart = { x: event.clientX, y: event.clientY };
     });
 
@@ -703,7 +722,7 @@
       const dx = event.clientX - touchStart.x;
       const dy = event.clientY - touchStart.y;
       touchStart = null;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 12) return;
       if (Math.abs(dx) > Math.abs(dy)) {
         setDirection(dx > 0 ? directions.right : directions.left);
       } else {
@@ -716,3 +735,5 @@
   </script>
 </body>
 </html>
+
+
