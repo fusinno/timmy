@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timmy</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #221c1b;
+      --paper: #fff7df;
+      --sun: #ffd166;
+      --mint: #6ee7b7;
+      --tomato: #ef4444;
+      --blue: #4f9cff;
+      --violet: #7c3aed;
+      --floor: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(255, 209, 102, .34), transparent 22rem),
+        radial-gradient(circle at 80% 12%, rgba(110, 231, 183, .22), transparent 20rem),
+        linear-gradient(135deg, #1f2937 0%, #111827 46%, #1c1917 100%);
+      font-family: "Trebuchet MS", "Verdana", sans-serif;
+      color: var(--paper);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .12;
+      background-image:
+        linear-gradient(90deg, #fff 1px, transparent 1px),
+        linear-gradient(#fff 1px, transparent 1px);
+      background-size: 42px 42px;
+      transform: rotate(-2deg) scale(1.1);
+    }
+
+    .game-shell {
+      position: relative;
+      width: min(94vw, 720px);
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: clamp(42px, 9vw, 86px);
+      line-height: .82;
+      letter-spacing: 0;
+      color: var(--sun);
+      text-shadow:
+        4px 4px 0 var(--ink),
+        -2px 2px 0 var(--ink),
+        0 7px 20px rgba(0, 0, 0, .35);
+    }
+
+    .hud {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 180px;
+    }
+
+    .chip,
+    button {
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .chip {
+      min-width: 86px;
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 14px;
+      transform: rotate(-1deg);
+    }
+
+    .chip strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .stage {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border: 5px solid var(--ink);
+      box-shadow:
+        9px 9px 0 var(--ink),
+        0 24px 70px rgba(0, 0, 0, .42);
+      background: #d5f1df;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: auto;
+      background:
+        linear-gradient(90deg, rgba(34, 28, 27, .09) 1px, transparent 1px),
+        linear-gradient(rgba(34, 28, 27, .09) 1px, transparent 1px),
+        #b9eccb;
+      background-size: 32px 32px;
+    }
+
+    .toast {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: clamp(58px, 15vw, 132px);
+      letter-spacing: 0;
+      color: var(--tomato);
+      text-shadow:
+        5px 5px 0 var(--paper),
+        9px 9px 0 var(--ink),
+        0 18px 30px rgba(0, 0, 0, .26);
+      opacity: 0;
+      transform: scale(.55) rotate(-8deg);
+    }
+
+    .toast.show {
+      animation: pop .72s cubic-bezier(.18, .89, .32, 1.28);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 26px;
+      background: rgba(17, 24, 39, .66);
+      text-align: center;
+    }
+
+    .panel {
+      max-width: 430px;
+      padding: 24px;
+      border: 4px solid var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      transform: rotate(-1deg);
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: 42px;
+      letter-spacing: 0;
+    }
+
+    .panel p {
+      margin: 0 0 16px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    button:hover,
+    button:focus-visible {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--ink);
+      outline: none;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .controls button {
+      padding: 8px;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: rgba(255, 247, 223, .82);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes pop {
+      0% {
+        opacity: 0;
+        transform: scale(.45) rotate(-12deg);
+      }
+      18% {
+        opacity: 1;
+        transform: scale(1.18) rotate(3deg);
+      }
+      62% {
+        opacity: 1;
+        transform: scale(1) rotate(-2deg);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.42) rotate(8deg);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .game-shell {
+        width: 100vw;
+        min-height: 100vh;
+        padding: 12px;
+        align-content: center;
+      }
+
+      header {
+        align-items: start;
+      }
+
+      .chip {
+        min-width: 72px;
+        padding: 7px 8px;
+        font-size: 12px;
+      }
+
+      .chip strong {
+        font-size: 22px;
+      }
+
+      .stage {
+        box-shadow: 5px 5px 0 var(--ink);
+      }
+
+      .footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell" aria-label="Juego Timmy">
+    <header>
+      <h1>Timmy</h1>
+      <div class="hud" aria-live="polite">
+        <div class="chip">Puntos <strong id="score">0</strong></div>
+        <div class="chip">Mejor <strong id="best">0</strong></div>
+      </div>
+    </header>
+
+    <section class="stage" id="stage">
+      <canvas id="game" width="640" height="640" aria-label="Tablero del juego Timmy"></canvas>
+      <div class="toast" id="toast">tukutu</div>
+      <div class="overlay" id="overlay">
+        <div class="panel">
+          <h2 id="overlayTitle">Listo</h2>
+          <p id="overlayText">Come cabezas calvas, crece y evita chocar contigo o con el borde.</p>
+          <button id="startButton" type="button">Empezar</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>Flechas, WASD o deslizamiento en movil.</span>
+      <div class="controls" aria-label="Controles tactiles">
+        <button type="button" data-dir="left" aria-label="Izquierda">&larr;</button>
+        <button type="button" data-dir="up" aria-label="Arriba">&uarr;</button>
+        <button type="button" data-dir="down" aria-label="Abajo">&darr;</button>
+        <button type="button" data-dir="right" aria-label="Derecha">&rarr;</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const stage = document.getElementById("stage");
+    const overlay = document.getElementById("overlay");
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlayText = document.getElementById("overlayText");
+    const startButton = document.getElementById("startButton");
+    const scoreNode = document.getElementById("score");
+    const bestNode = document.getElementById("best");
+    const toast = document.getElementById("toast");
+
+    const grid = 20;
+    const cell = canvas.width / grid;
+    const characterScale = 3;
+    const stepMs = 118;
+    const startSnake = [
+      { x: 8, y: 10 },
+      { x: 7, y: 10 },
+      { x: 6, y: 10 }
+    ];
+
+    let snake;
+    let food;
+    let direction;
+    let queuedDirection;
+    let score;
+    let best = Number(localStorage.getItem("timmy-best") || 0);
+    let running = false;
+    let lastTick = 0;
+    let rafId = null;
+    let touchStart = null;
+
+    bestNode.textContent = best;
+
+    function reset() {
+      snake = startSnake.map((part) => ({ ...part }));
+      direction = { x: 1, y: 0 };
+      queuedDirection = { x: 1, y: 0 };
+      score = 0;
+      food = createFood();
+      scoreNode.textContent = score;
+      draw();
+    }
+
+    function createFood() {
+      const freeCells = [];
+      for (let y = 0; y < grid; y += 1) {
+        for (let x = 0; x < grid; x += 1) {
+          if (!snake.some((part) => part.x === x && part.y === y)) {
+            freeCells.push({ x, y });
+          }
+        }
+      }
+      if (freeCells.length === 0) return null;
+      return freeCells[Math.floor(Math.random() * freeCells.length)];
+    }
+
+    function start() {
+      reset();
+      running = true;
+      overlay.classList.add("hidden");
+      lastTick = performance.now();
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function loop(now) {
+      if (!running) return;
+      if (now - lastTick >= stepMs) {
+        tick();
+        lastTick = now;
+      }
+      draw();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function tick() {
+      if (queuedDirection.x !== -direction.x || queuedDirection.y !== -direction.y) {
+        direction = queuedDirection;
+      }
+
+      const head = snake[0];
+      const nextHead = { x: head.x + direction.x, y: head.y + direction.y };
+      const eatsFood = food && nextHead.x === food.x && nextHead.y === food.y;
+      const collisionSnake = eatsFood ? snake : snake.slice(0, -1);
+      const wallHit = nextHead.x < 0 || nextHead.x >= grid || nextHead.y < 0 || nextHead.y >= grid;
+      const selfHit = collisionSnake.some((part) => part.x === nextHead.x && part.y === nextHead.y);
+
+      if (wallHit || selfHit) {
+        gameOver();
+        return;
+      }
+
+      snake.unshift(nextHead);
+
+      if (eatsFood) {
+        score += 1;
+        scoreNode.textContent = score;
+        best = Math.max(best, score);
+        bestNode.textContent = best;
+        localStorage.setItem("timmy-best", String(best));
+        showTukutu();
+        food = createFood();
+        if (!food) {
+          victory();
+        }
+      } else {
+        snake.pop();
+      }
+    }
+
+    function gameOver() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      overlayTitle.textContent = "Fin";
+      overlayText.textContent = score
+        ? `Has conseguido ${score} tukutu${score === 1 ? "" : "s"}.`
+        : "La primera cabeza se ha resistido.";
+      startButton.textContent = "Reintentar";
+      overlay.classList.remove("hidden");
+    }
+
+    function victory() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      overlayTitle.textContent = "Completo";
+      overlayText.textContent = `Has llenado todo el tablero con ${score} tukutus.`;
+      startButton.textContent = "Otra vez";
+      overlay.classList.remove("hidden");
+    }
+
+    function showTukutu() {
+      toast.classList.remove("show");
+      void toast.offsetWidth;
+      toast.classList.add("show");
+    }
+
+    function setDirection(next) {
+      if (!running) return;
+      queuedDirection = next;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBoard();
+      if (food) drawFood(food.x, food.y);
+
+      for (let i = snake.length - 1; i >= 1; i -= 1) {
+        drawBody(snake[i], i);
+      }
+
+      drawTimmyHead(snake[0], direction);
+    }
+
+    function drawBoard() {
+      ctx.fillStyle = "#b9eccb";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "rgba(34,28,27,.10)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= grid; i += 1) {
+        const pos = i * cell;
+        ctx.beginPath();
+        ctx.moveTo(pos, 0);
+        ctx.lineTo(pos, canvas.height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, pos);
+        ctx.lineTo(canvas.width, pos);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,.28)";
+      for (let y = 0; y < grid; y += 1) {
+        for (let x = 0; x < grid; x += 1) {
+          if ((x + y) % 2 === 0) {
+            ctx.fillRect(x * cell, y * cell, cell, cell);
+          }
+        }
+      }
+    }
+
+    function drawBody(part, index) {
+      const px = part.x * cell;
+      const py = part.y * cell;
+      const wiggle = Math.sin(index * 1.7 + score) * 2.8;
+
+      ctx.save();
+      ctx.translate(px + cell / 2, py + cell / 2);
+      ctx.rotate(wiggle * Math.PI / 180);
+
+      const base = index % 2 ? "#2dd484" : "#22b8cf";
+      const stripe = index % 2 ? "#ffe15a" : "#f97316";
+      roundedRect(-cell * .47, -cell * .39, cell * .94, cell * .78, 10, base, "#221c1b", 3);
+
+      ctx.fillStyle = "rgba(255,255,255,.28)";
+      ctx.beginPath();
+      ctx.ellipse(-cell * .16, -cell * .13, cell * .22, cell * .1, -.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = stripe;
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-cell * .3, 0);
+      ctx.quadraticCurveTo(0, -cell * .16, cell * .3, 0);
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff7df";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, cell * .1, cell * .13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawFood(x, y) {
+      const cx = x * cell + cell / 2;
+      const cy = y * cell + cell / 2;
+      const bob = Math.sin(performance.now() / 220) * .03;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.sin(performance.now() / 260) * .07);
+      ctx.scale(characterScale, characterScale);
+
+      ctx.fillStyle = "rgba(34,28,27,.24)";
+      ctx.beginPath();
+      ctx.ellipse(2, cell * .43, cell * .42, cell * .13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.scale(1 + bob, 1 - bob);
+
+      ctx.fillStyle = "#f1b889";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.1;
+      ctx.beginPath();
+      ctx.ellipse(-cell * .39, cell * .01, cell * .105, cell * .145, -.12, 0, Math.PI * 2);
+      ctx.ellipse(cell * .39, cell * .01, cell * .105, cell * .145, .12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#f8caa6";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(0, -cell * .015, cell * .39, cell * .45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,.62)";
+      ctx.beginPath();
+      ctx.ellipse(-cell * .11, -cell * .23, cell * .135, cell * .075, -.45, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#111111";
+      ctx.lineWidth = 2.3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-cell * .27, -cell * .145);
+      ctx.quadraticCurveTo(-cell * .15, -cell * .2, -cell * .045, -cell * .145);
+      ctx.moveTo(cell * .045, -cell * .145);
+      ctx.quadraticCurveTo(cell * .15, -cell * .2, cell * .27, -cell * .145);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-cell * .14, -cell * .035, cell * .13, 0, Math.PI * 2);
+      ctx.arc(cell * .14, -cell * .035, cell * .13, 0, Math.PI * 2);
+      ctx.moveTo(-cell * .01, -cell * .035);
+      ctx.lineTo(cell * .01, -cell * .035);
+      ctx.stroke();
+
+      ctx.fillStyle = "#221c1b";
+      ctx.beginPath();
+      ctx.arc(-cell * .14, -cell * .035, cell * .034, 0, Math.PI * 2);
+      ctx.arc(cell * .14, -cell * .035, cell * .034, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#915b3a";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(0, cell * .015);
+      ctx.quadraticCurveTo(cell * .045, cell * .085, -cell * .025, cell * .105);
+      ctx.stroke();
+
+      ctx.fillStyle = "#111111";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.ellipse(0, cell * .195, cell * .095, cell * .046, 0, 0, Math.PI * 2);
+      ctx.moveTo(-cell * .09, cell * .21);
+      ctx.bezierCurveTo(-cell * .075, cell * .36, cell * .075, cell * .36, cell * .09, cell * .21);
+      ctx.bezierCurveTo(cell * .035, cell * .285, -cell * .035, cell * .285, -cell * .09, cell * .21);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "#fff7df";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, cell * .17, cell * .115, .13 * Math.PI, .87 * Math.PI);
+      ctx.stroke();
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function drawTimmyHead(part, dir) {
+      const cx = part.x * cell + cell / 2;
+      const cy = part.y * cell + cell / 2;
+      const angle = Math.atan2(dir.y, dir.x);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      ctx.scale(characterScale, characterScale);
+
+      ctx.fillStyle = "rgba(34,28,27,.28)";
+      ctx.beginPath();
+      ctx.ellipse(1, cell * .46, cell * .48, cell * .13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.5;
+      ctx.fillStyle = "#222a35";
+      ctx.beginPath();
+      ctx.arc(-cell * .31, cell * .35, cell * .205, 0, Math.PI * 2);
+      ctx.arc(cell * .31, cell * .35, cell * .205, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "#fff7df";
+      ctx.lineWidth = 1.7;
+      for (const wheelX of [-cell * .31, cell * .31]) {
+        ctx.beginPath();
+        ctx.arc(wheelX, cell * .35, cell * .13, 0, Math.PI * 2);
+        ctx.moveTo(wheelX - cell * .13, cell * .35);
+        ctx.lineTo(wheelX + cell * .13, cell * .35);
+        ctx.moveTo(wheelX, cell * .22);
+        ctx.lineTo(wheelX, cell * .48);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-cell * .3, cell * .35);
+      ctx.lineTo(-cell * .16, cell * .12);
+      ctx.lineTo(cell * .21, cell * .12);
+      ctx.lineTo(cell * .31, cell * .35);
+      ctx.moveTo(-cell * .32, cell * .35);
+      ctx.lineTo(cell * .32, cell * .35);
+      ctx.stroke();
+
+      roundedRect(-cell * .35, cell * .05, cell * .7, cell * .36, 9, "#3b82f6", "#221c1b", 2.4);
+
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-cell * .07, cell * .06);
+      ctx.lineTo(cell * .08, cell * .06);
+      ctx.lineTo(0, cell * .23);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.3;
+      ctx.beginPath();
+      ctx.moveTo(-cell * .25, cell * .21);
+      ctx.quadraticCurveTo(-cell * .38, cell * .2, -cell * .45, cell * .32);
+      ctx.moveTo(cell * .24, cell * .21);
+      ctx.quadraticCurveTo(cell * .39, cell * .2, cell * .45, cell * .32);
+      ctx.stroke();
+
+      ctx.fillStyle = "#f4bf91";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(0, -cell * .12, cell * .38, cell * .4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#754321";
+      ctx.beginPath();
+      ctx.moveTo(-cell * .34, -cell * .24);
+      ctx.bezierCurveTo(-cell * .24, -cell * .53, cell * .22, -cell * .55, cell * .34, -cell * .25);
+      ctx.bezierCurveTo(cell * .17, -cell * .34, -cell * .13, -cell * .31, -cell * .34, -cell * .24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff7df";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(-cell * .14, -cell * .12, cell * .092, 0, Math.PI * 2);
+      ctx.arc(cell * .14, -cell * .12, cell * .092, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#221c1b";
+      ctx.beginPath();
+      ctx.arc(-cell * .105, -cell * .112, cell * .03, 0, Math.PI * 2);
+      ctx.arc(cell * .175, -cell * .112, cell * .03, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ef4444";
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.ellipse(cell * .34, cell * .03, cell * .09, cell * .105, -.25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "#221c1b";
+      ctx.lineWidth = 1.9;
+      ctx.beginPath();
+      ctx.arc(0, cell * .08, cell * .15, .1 * Math.PI, .9 * Math.PI);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function roundedRect(x, y, width, height, radius, fill, stroke, lineWidth) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+
+    const keyMap = {
+      ArrowUp: { x: 0, y: -1 },
+      KeyW: { x: 0, y: -1 },
+      ArrowDown: { x: 0, y: 1 },
+      KeyS: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+      KeyA: { x: -1, y: 0 },
+      ArrowRight: { x: 1, y: 0 },
+      KeyD: { x: 1, y: 0 }
+    };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space" || event.code === "Enter") {
+        if (!running) start();
+        return;
+      }
+
+      const next = keyMap[event.code];
+      if (next) {
+        event.preventDefault();
+        setDirection(next);
+      }
+    });
+
+    document.querySelectorAll("[data-dir]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const dir = button.dataset.dir;
+        const next = {
+          up: { x: 0, y: -1 },
+          down: { x: 0, y: 1 },
+          left: { x: -1, y: 0 },
+          right: { x: 1, y: 0 }
+        }[dir];
+        setDirection(next);
+      });
+    });
+
+    stage.addEventListener("pointerdown", (event) => {
+      touchStart = { x: event.clientX, y: event.clientY };
+    });
+
+    stage.addEventListener("pointerup", (event) => {
+      if (!touchStart) return;
+      const dx = event.clientX - touchStart.x;
+      const dy = event.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        setDirection(dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 });
+      } else {
+        setDirection(dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 });
+      }
+    });
+
+    startButton.addEventListener("click", start);
+    reset();
+  </script>
+</body>
+</html>
