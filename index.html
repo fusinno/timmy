@@ -253,6 +253,10 @@
       line-height: 1.15;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @keyframes tukutu {
       0% { opacity: 0; transform: scale(.48) rotate(-12deg); }
       18% { opacity: 1; transform: scale(1.15) rotate(3deg); }
@@ -729,19 +733,25 @@
       }
     });
 
+    overlay.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      start();
+    });
+    overlay.addEventListener("click", (event) => {
+      event.preventDefault();
+    });
     startButton.addEventListener("pointerdown", (event) => {
       event.preventDefault();
-      event.stopPropagation();
       start();
     });
     startButton.addEventListener("click", (event) => {
       event.preventDefault();
-      event.stopPropagation();
     });
     boot();
   </script>
 </body>
 </html>
+
 
 
 
