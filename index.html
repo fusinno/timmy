@@ -381,7 +381,9 @@
     const targetAssets = [];
     const grid = 15;
     const cell = canvas.width / grid;
-    const stepMs = 320;
+    const initialStepMs = 320;
+    const minStepMs = 145;
+    const speedUpPerCatch = 12;
     const startSnake = [
       { x: 7, y: 7 },
       { x: 6, y: 7 },
@@ -462,12 +464,17 @@
 
     function loop(now) {
       if (!running) return;
+      const stepMs = currentStepMs();
       if (now - lastTick >= stepMs) {
         tick();
         lastTick = now;
       }
       draw();
       rafId = requestAnimationFrame(loop);
+    }
+
+    function currentStepMs() {
+      return Math.max(minStepMs, initialStepMs - score * speedUpPerCatch);
     }
 
     function tick() {
@@ -802,6 +809,7 @@
   </script>
 </body>
 </html>
+
 
 
 
