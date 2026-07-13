@@ -334,7 +334,7 @@
     const targetAssets = [];
     const grid = 15;
     const cell = canvas.width / grid;
-    const stepMs = 240;
+    const stepMs = 320;
     const startSnake = [
       { x: 7, y: 7 },
       { x: 6, y: 7 },
@@ -431,13 +431,12 @@
       if (direction.x === 0 && direction.y === 0) return;
 
       const head = snake[0];
-      const nextHead = { x: head.x + direction.x, y: head.y + direction.y };
+      const nextHead = { x: (head.x + direction.x + grid) % grid, y: (head.y + direction.y + grid) % grid };
       const eatsFood = food && nextHead.x === food.x && nextHead.y === food.y;
       const collisionSnake = eatsFood ? snake : snake.slice(0, -1);
-      const wallHit = nextHead.x < 0 || nextHead.x >= grid || nextHead.y < 0 || nextHead.y >= grid;
       const selfHit = collisionSnake.some((part) => part.x === nextHead.x && part.y === nextHead.y);
 
-      if (wallHit || selfHit) {
+      if (selfHit) {
         endGame();
         return;
       }
@@ -730,10 +729,19 @@
       }
     });
 
-    startButton.addEventListener("click", start);
+    startButton.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      start();
+    });
+    startButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
     boot();
   </script>
 </body>
 </html>
+
 
 
