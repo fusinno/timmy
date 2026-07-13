@@ -153,16 +153,41 @@
       place-items: center;
       pointer-events: none;
       opacity: 0;
-      transform: scale(.65) rotate(-8deg);
+      transform: scale(.72) rotate(-4deg);
       color: var(--red);
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: clamp(58px, 21vw, 122px);
       letter-spacing: 0;
+      text-align: center;
       text-shadow: 4px 4px 0 var(--paper), 8px 8px 0 var(--ink), 0 16px 30px var(--shadow);
+      z-index: 4;
+    }
+
+    .toast-card {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+    }
+
+    .toast-card img {
+      width: min(74vw, 425px);
+      height: min(74vw, 425px);
+      object-fit: cover;
+      object-position: center 24%;
+      border: 6px solid var(--paper);
+      border-radius: 50%;
+      background: var(--paper);
+      box-shadow: 8px 8px 0 var(--ink), 0 18px 42px rgba(0, 0, 0, .4);
+    }
+
+    .toast-card span {
+      color: var(--red);
+      font-size: clamp(46px, 14vw, 92px);
+      line-height: .9;
+      text-transform: uppercase;
     }
 
     .toast.show {
-      animation: tukutu .72s cubic-bezier(.18, .89, .32, 1.28);
+      animation: catch-pop 1.05s cubic-bezier(.18, .89, .32, 1.28);
     }
 
     .overlay {
@@ -272,11 +297,11 @@
       display: none !important;
     }
 
-    @keyframes tukutu {
-      0% { opacity: 0; transform: scale(.48) rotate(-12deg); }
-      18% { opacity: 1; transform: scale(1.15) rotate(3deg); }
-      62% { opacity: 1; transform: scale(1) rotate(-2deg); }
-      100% { opacity: 0; transform: scale(1.45) rotate(8deg); }
+    @keyframes catch-pop {
+      0% { opacity: 0; transform: scale(.38) rotate(-10deg); }
+      16% { opacity: 1; transform: scale(1.05) rotate(2deg); }
+      72% { opacity: 1; transform: scale(1) rotate(-2deg); }
+      100% { opacity: 0; transform: scale(1.28) rotate(6deg); }
     }
 
     @media (min-width: 720px) {
@@ -307,7 +332,7 @@
     <div class="stage-wrap">
       <section class="stage" id="stage">
         <canvas id="game" width="640" height="640" aria-label="Tablero del juego Timmy"></canvas>
-        <div class="toast" id="toast">tukutu</div>
+        <div class="toast" id="toast" aria-live="polite"></div>
         <div class="overlay" id="overlay">
           <div class="panel">
             <h2 id="overlayTitle">Cargando</h2>
@@ -470,7 +495,7 @@
         best = Math.max(best, score);
         bestNode.textContent = best;
         localStorage.setItem("timmy-mobile-best", String(best));
-        showTukutu();
+        showCapture(food.asset);
         food = createFood();
         if (!food) victory();
       } else {
@@ -496,8 +521,16 @@
       overlay.classList.remove("hidden");
     }
 
-    function showTukutu() {
+    function showCapture(asset) {
+      const name = asset?.label || "tukutu";
+      const imageSrc = asset?.src || "";
       toast.classList.remove("show");
+      toast.innerHTML = `
+        <div class="toast-card">
+          <img src="${imageSrc}" alt="${name}">
+          <span>${name}</span>
+        </div>
+      `;
       void toast.offsetWidth;
       toast.classList.add("show");
     }
@@ -769,6 +802,7 @@
   </script>
 </body>
 </html>
+
 
 
 
